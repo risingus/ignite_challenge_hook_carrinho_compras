@@ -22,44 +22,57 @@ interface CartItemsAmount {
 }
 
 const Home = (): JSX.Element => {
-  // const [products, setProducts] = useState<ProductFormatted[]>([]);
-  // const { addProduct, cart } = useCart();
+  const [products, setProducts] = useState<ProductFormatted[]>([]);
+  const { addProduct, cart } = useCart();
 
-  // const cartItemsAmount = cart.reduce((sumAmount, product) => {
-  //   // TODO
-  // }, {} as CartItemsAmount)
+  const cartItemsAmount = cart.reduce((sumAmount, product) => {
+  const quantidade = {...sumAmount };
+  quantidade[product.id] = product.amount;
+  return quantidade;
+  }, {} as CartItemsAmount)
 
   useEffect(() => {
     async function loadProducts() {
-      // TODO
+      const produtos = await api.get('/products')
+      // eslint-disable-next-line array-callback-return
+      produtos.data.map((shoe: { price: any | bigint; }) => {
+        shoe.price = formatPrice(shoe.price)
+      })
+
+      setProducts(produtos.data)
     }
 
     loadProducts();
   }, []);
 
   function handleAddProduct(id: number) {
-    // TODO
+    addProduct(id);
   }
 
   return (
     <ProductList>
-      <li>
-        <img src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg" alt="Tênis de Caminhada Leve Confortável" />
-        <strong>Tênis de Caminhada Leve Confortável</strong>
-        <span>R$ 179,90</span>
-        <button
-          type="button"
-          data-testid="add-product-button"
-        // onClick={() => handleAddProduct(product.id)}
-        >
-          <div data-testid="cart-product-quantity">
-            <MdAddShoppingCart size={16} color="#FFF" />
-            {/* {cartItemsAmount[product.id] || 0} */} 2
-          </div>
-
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
+      {products.map((produto) => {
+        return (
+          <li key={produto.id}>
+          <img src={`${produto.image}`} alt={`${produto.title}`}/>
+          <strong>{produto.title}</strong>
+          <span>{produto.price}</span>
+          <button
+            type="button"
+            data-testid="add-product-button"
+          onClick={() => handleAddProduct(produto.id)}
+          >
+            <div data-testid="cart-product-quantity">
+              <MdAddShoppingCart size={16} color="#FFF" />
+              {cartItemsAmount[produto.id] || 0}
+            </div>
+  
+            <span>ADICIONAR AO CARRINHO</span>
+          </button>
+        </li>
+        )
+      })}
+     
     </ProductList>
   );
 };
